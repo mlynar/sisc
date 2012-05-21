@@ -1,4 +1,9 @@
 function [ws,r, Cmax2] = myTemporalMP(y,B,nonnegative,maxiter, stopTrs, mindelta, deadzone)
+    %Author:
+    %   Patrick Mineault, patrick DOT mineault AT gmail DOT com
+    %   http://xcorr.net
+    %
+    
     %Modified by WM:
     %    - stopping criteria added as in Smith,Lewicki 2006
     %      based on coefficient level   
@@ -66,10 +71,7 @@ function [ws,r, Cmax2] = myTemporalMP(y,B,nonnegative,maxiter, stopTrs, mindelta
     %   three orders of magnitude more than a generic implementation like 
     %   the one in SparseLab.
     %
-    %Author:
-    %   Patrick Mineault, patrick DOT mineault AT gmail DOT com
-    %   http://xcorr.net
-    %
+   
     %History:
     %   08/08/2011: Added deadzone option
     %   04/08/2011: Tweaked performance for large signals/bases

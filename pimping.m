@@ -1,4 +1,9 @@
 function ws = pimping(sig, phi, coefM, niter)
+%perform MAP inference of activation coefficients based on coefM initialization
+%	sig - signal vector
+%	phi - kernel dictionary
+%	coefM - coefficient matrix, initialized with MP for instance
+%	niter - iteration count
 
 phi = phi';
 if size(sig, 2) == 1;
@@ -74,19 +79,3 @@ for n = 1:niter
 end
 
 ws = ws';
-
-
-%for niter
-%   compute reconstruction
-%   residue = sig - reconstruction
-%   for basis_function
-%       ds_n = zeros(size(coef(n,:)));
-%       tp = find(coef(n,:) ~= 0);
-%       for t in tp
-%           rng = t-hL:t+hL;
-%           ds_n(rng) = basis_function_n .* residue(rng);
-%       end
-%       ds_n = ds_n + sparse_penalty(ds_n)
-%       s_n = s_n - lr * ds_n
-%   end
-%end
