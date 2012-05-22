@@ -6,7 +6,8 @@ function [nPadMask, nPhiLP] = adjustPadding(phi, padMask, phiLP, exTrs)
     nPhiLP = phiLP;
     
     relL = 0.1;
-    trimF = 0.2;
+    
+    shrTrs = 0.5 * exTrs;
     
     for i = 1:nKernels        
         padInds = find(padMask(:,i));
@@ -16,6 +17,7 @@ function [nPadMask, nPhiLP] = adjustPadding(phi, padMask, phiLP, exTrs)
         kS = padInds(lpI);
         kE = padInds(lpI + 1);
         endL = floor(relL * (kE - kS + 1));
+       
         nds = phi([kS+1:kS+endL kE-endL:kE-1], i);
            
         mFirst = find(padMask(:,i), 1, 'first');
@@ -31,16 +33,18 @@ function [nPadMask, nPhiLP] = adjustPadding(phi, padMask, phiLP, exTrs)
             nPadMask(inds, i) = 1;
             nPhiLP(i) = phiLP(i) + 2 * nPadL;
 
-         %TODO: add kernel shrinkage                   
-         elseif  sum(abs(nds)) < exTrs * 2 * endL
-             nPadL = max(2, floor(relL * trimF * phiLP(i))); 
+         %TODO: add kernel shrinkage, remove arbitrary value
+         %kernel shrinkage from both sides
+         elseif  sum(abs(nds)) < shrTrs * 2 * endL & phiLP(i) > 91
+             nPadL = max(2, floor(relL * phiLP(i))); 
              
              inds = [(mFirst:mFirst+nPadL-1) (mLast-nPadL+1:mLast)];
              inds = inds(inds > 0 & inds < totL);
              
              nPadMask(:,i) = 0;
              nPadMask(inds, i) = 1;
-             nPhiLP(i) = phiLP(i) - 2 * (nPadL - 1);           
-            
+             
+             nl = phiLP(i) - 2 * (nPadL - 1);           
+             nPhiLP(i) = nl;
         end        
     end

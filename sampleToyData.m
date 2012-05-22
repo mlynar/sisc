@@ -9,7 +9,7 @@ end
 l = minL + randi(maxL-minL);
 smp = zeros(1,l);
 
-nParts = randi(floor(l/5));
+nParts = 100; %randi(floor(l/5));
 kL = size(phi, 1);
 hL = floor(kL/2);
 rng = -hL:hL;
@@ -17,7 +17,8 @@ nKernels = size(phi, 2);
 
 for i = 1:nParts
     t = kL + randi(l - 2 * kL);
-    smp(t+rng) = smp(t+rng) + rand() * phi(:, randi(nKernels))';
+    kernInd = nKernels - mod(i,nKernels);
+    smp(t+rng) = smp(t+rng) + (0.3 + 0.7 * rand()) * phi(:, kernInd)';
 end
 
 if nonneg
