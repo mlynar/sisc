@@ -1,12 +1,12 @@
-function [ws,r, Cmax2] = myTemporalMP(y,B,nonnegative,maxiter, stopTrs, mindelta, deadzone)
+function [ws,r, Cmax2] = myTemporalMP(y,B,nonnegative,maxiter, snrTrs, mindelta, deadzone)
     %Author:
     %   Patrick Mineault, patrick DOT mineault AT gmail DOT com
     %   http://xcorr.net
     %
     
     %Modified by WM:
-    %    - stopping criteria added as in Smith,Lewicki 2006
-    %      based on coefficient level   
+    %    - stopping criteria based on SNR
+    %     
     
     %[ws,r] = temporalMP(y,B,nonnegative,maxiter,maxr2,deadzone)
     %Perform matching pursuit (MP) on a one-dimensional signal y 
@@ -169,11 +169,6 @@ function [ws,r, Cmax2] = myTemporalMP(y,B,nonnegative,maxiter, stopTrs, mindelta
         %Find the max of Cmax2
         [themax,maxsqrt] = max(Cmax2); %wartosc, indeks bloku
         
-        if abs(themax) < stopTrs
-            fprintf('Best coeff below threshold. max = %.3f\n', themax);
-            break;
-        end
-        
         if themax^2 < mindelta
             %Time to go
             fprintf('Best delta decreases SSE by less than mindelta, ending\nmax = %.5f max^2 = %.5f\n', themax, themax^2);
@@ -258,6 +253,12 @@ function [ws,r, Cmax2] = myTemporalMP(y,B,nonnegative,maxiter, stopTrs, mindelta
                 fprintf('Max R^2 reached at iteration %d\n',ii);
                 break;
             end
+        end
+        
+        snrT = snr(y, y-r);
+        if snrT >= snrTrs
+            fprintf('SNR level of %.3f dB reached\n', snrT);
+            break;
         end
         
         ii = ii + 1;

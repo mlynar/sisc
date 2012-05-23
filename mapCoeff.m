@@ -1,9 +1,19 @@
-function ws = pimping(sig, phi, coefM, niter)
+function ws = mapCoeff(sig, phi, coefM, niter, lr, lambda, noiseVar)
 %perform MAP inference of activation coefficients based on coefM initialization
 %	sig - signal vector
 %	phi - kernel dictionary
 %	coefM - coefficient matrix, initialized with MP for instance
 %	niter - iteration count
+%   lr - learning rate
+%   lambda - sparseness coefficient
+%   noiseVar - noise variance
+
+%learning params
+if nargin < 4
+    lr = 0.03;
+    lambda = 0.05;
+    noiseVar = 1;
+end
 
 phi = phi';
 if size(sig, 2) == 1;
@@ -17,13 +27,6 @@ L = size(phi,2);
 hL = floor(L / 2); 
 nB = size(phi,1);
 
-%learning params
-%TODO: put as arguments
-lambda = 0.05; %0.02;
-noiseVar = 1;
-lr = 0.03;
-trs = 1e-5;
-
 %MSR stopping criterion
 oldMSR = 1e12;
 newMSR = 0;
@@ -34,12 +37,7 @@ for n = 1:niter
     fprintf('Iteration %d nnz %d\n', n, nnz(ws));
     
     %compute signal reconstruction
-    %TODO: replace with reconstruct_signal function call
-    rec = zeros(1, length(sig));
-    for i = 1:nB
-        si = convnfft(ws(i,:), phi(i,:));
-        rec = rec + si(hL + (1:sL));
-    end
+    rec = reconstructSignal(ws, phi');
     
     %compute residue
     r = sig - rec;
@@ -57,7 +55,7 @@ for n = 1:niter
     wsOld = ws;
     
     for i = 1:nB
-        tpoints = find(abs(ws(i,:)) >= trs);
+        tpoints = find(ws ~= 0);
         
         if ~isempty(tpoints)             
             ds = zeros(1,sL);
@@ -69,10 +67,9 @@ for n = 1:niter
                 ds(t) = phi(i, ind) * r(rng)' ./ noiseVar;
             end
             
-            %laplace prior 
-            %ds = ds + lambda * (-sign(ws(i,:)));
             %"differential" sparse prior
-            ds = ds - lambda * 2 * ws(i,:) ./ (1 + ws(i,:).^2);
+            ds = ds - lambda * sparseLog(ws(i,:));
+            
             ws(i,:) = ws(i,:) + lr * ds;
         end
     end

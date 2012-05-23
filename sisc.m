@@ -1,6 +1,6 @@
 %TODO:
 %   -parametrization into one object
-%   -sparse objective into separate function (in pimping.m)
+%   -sparse objective into separate function (in pimping.m) X
 %   -kernel shrinkage
 %   -likelihood history, convergence
 %   -data sampling
@@ -32,50 +32,43 @@ padMask(mdP + rngP, :) = 1;
 padMask(mdP + rng, :) = 0;
 
 %learning params
-niter = 300;
-nMapIter = 300;
-mapIter = 100;
-lr = 0.05;
-aTrs = 1e-5;
+niter = 2000;
+lr = 0.01;
 exTrs = 0.05;
 noiseVar = 1;
-nbatch = ceil(linspace(1, 50, niter));
+
+nbatch = ceil(linspace(1, 20, niter));
 
 %learning history
 lHist = zeros(1, niter);
 
 %MP params
 nonneg = false;
-mpIter = 2000;
-eps =  1e-4;
+mpIter = 5000;
+nsnr = ceil(linspace(5, 25, niter));
 
 %testing toy dataset params
 fcoefs = MakeERBFilters(6000, 32, 200);
-gammaTones = ERBFilterBank([1 zeros(1,100)], fcoefs)';
+gammaTones = ERBFilterBank([1 zeros(1,256)], fcoefs)';
 gammaTones = normalize_matrix(gammaTones);
 
-for i = 70:niter
+for i = 1:niter
     fprintf('ITERATION %d\n', i);
         
     dPhi = zeros(totL, nKernels);    
     
-    for jB = 1:nbatch(i);
-        tData = sampleToyData(gammaTones, 12000, 12001); %TODO: write real version
 
-        %[w r] = temporalMP(tData, phi, nonneg, mpIter, eps);
-        [w r] = myTemporalMP(tData, phi, nonneg, mpIter, 0.1);
+    for j = 1:nbatch(i)
+        tData = sampleToyData(gammaTones, 10000, 3);
+        [w r] = myTemporalMP(tData, phi, nonneg, mpIter, nsnr(i));
 
         lHist(i) = lHist(i) + sum(sqrt((tData - r').^2));
-        %fprintf('Likelihood: %.5f\n', lHist(i));
-
-        %MAP tuning; 
-        if i >= nMapIter
-            w = pimping(tData, phi, w, mapIter);
-            r = reconstruct_signal(w, phi);
-        end
+        
+        %TODO: why converges faster when residue = r?
+        residue = tData'- r;
 
         for k = 1:nKernels
-            tPs = find(abs(w(:,k)) > aTrs);
+            tPs = find(w(:,k) ~= 0);
 
             hLK = floor(phiLP(k) / 2);
             rngK = -hLK:hLK;
@@ -88,9 +81,10 @@ for i = 70:niter
                 tInds = tInds(inds);
                 kInds = mdP + rngK(inds);
 
-                dPhi(kInds, k) = dPhi(kInds, k) + w(t,k) * r(tInds);
+                dPhi(kInds, k) = dPhi(kInds, k) + w(t,k) * residue(tInds);
             end
         end
+        
     end
 
     phi = phi + lr * dPhi;
@@ -101,12 +95,11 @@ for i = 70:niter
     
     lHist(i) = lHist(i) / nbatch(i);
     
-    %if ~mod(i, 5)
-    %    close all;
-    %    plotbs(phi,0);
-        %figure; plot(lHist, 'r','LineWidth',2); grid()
-    %    pause(0.3);
-    %end
+%     if ~mod(i, 10)
+%         close all;
+%         plotbs(phi,0);
+%         pause(0.3);
+%     end
 end
 
-%save('LEARNED_KERNELS.mat');
+save('TTT.mat');
