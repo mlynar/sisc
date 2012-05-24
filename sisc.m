@@ -8,23 +8,22 @@
 
 %basis params
 mdP = (p.totL - 1) / 2;
-nKernels = 2;
 rng = -floor(p.kML/2):floor(p.kML/2);
 padL = floor(0.1 * p.kML);
 kL = p.kML + 2 * padL;
 
 hL = floor(kL / 2);
-rngP = repmat(-hL:hL, nKernels);
+rngP = repmat(-hL:hL, p.nKernels);
 
 %basis initialization
-phi = zeros(p.totL, nKernels);
-phi(mdP+rng,:) = randn(p.kML, nKernels);
+phi = zeros(p.totL, p.nKernels);
+phi(mdP+rng,:) = randn(p.kML, p.nKernels);
 phi = normalize_matrix(phi);
 
-phiLP = repmat(kL, nKernels, 1);
+phiLP = repmat(kL, p.nKernels, 1);
 
 %TODO: change mask from binary inds to array inds
-padMask = zeros(p.totL, nKernels);
+padMask = zeros(p.totL, p.nKernels);
 padMask(mdP + rngP, :) = 1;
 padMask(mdP + rng, :) = 0;
 
@@ -40,10 +39,10 @@ gammaTones = normalize_matrix(gammaTones);
 for i = 1:p.niter
     fprintf('ITERATION %d\n', i);
         
-    dPhi = zeros(p.totL, nKernels);    
+    dPhi = zeros(p.totL, p.nKernels);    
     
     for j = 1:p.nbatch(i)
-        tData = sampleToyData(gammaTones(:,30), 3000, 1.5);
+        tData = sampleToyData(gammaTones(:,28:32), 3000, 3);
                 
         [w r] = myTemporalMP(tData, phi, p.mp.nonneg, p.mp.mpIter(i), 1e-16);%, 0, p.mp.nsnr(i));
         
@@ -56,7 +55,7 @@ for i = 1:p.niter
 
         lHist(i) = lHist(i) + norm(residue, 2);
             
-        for k = 1:nKernels
+        for k = 1:p.nKernels
             tPs = find(w(:,k) ~= 0);
 
             hLK = floor(phiLP(k) / 2);

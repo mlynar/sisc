@@ -1,9 +1,8 @@
 clear all
 
-
 %basis params
 p.totL = 513;
-p.nKernels = 2;
+p.nKernels = 5;
 p.kML = 201;
 p.exTrs = 0.05;
 
