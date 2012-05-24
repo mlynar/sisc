@@ -21,6 +21,9 @@ for i = 1:nKernels
         t = tau(j);
         s = rndlap();
         if abs(s) > spkTrs
+            
+            %s = abs(s);
+            
             inds = t + rng;
             tInds = inds > 0 & inds < L;
             inds = inds(tInds);
@@ -29,4 +32,4 @@ for i = 1:nKernels
     end
 end
     
-smp = smp ./ max(abs(smp));
+smp = smp ./ (max(abs(smp)) + 1e-10);

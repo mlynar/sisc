@@ -1,13 +1,4 @@
-function [ws,r, Cmax2] = myTemporalMP(y,B,nonnegative,maxiter, snrTrs, mindelta, deadzone)
-    %Author:
-    %   Patrick Mineault, patrick DOT mineault AT gmail DOT com
-    %   http://xcorr.net
-    %
-    
-    %Modified by WM:
-    %    - stopping criteria based on SNR
-    %     
-    
+function [ws,r, Cmax2] = myTemporalMP(y,B,nonnegative,maxiter,mindelta,deadzone, snrTrs)
     %[ws,r] = temporalMP(y,B,nonnegative,maxiter,maxr2,deadzone)
     %Perform matching pursuit (MP) on a one-dimensional signal y 
     %
@@ -71,7 +62,10 @@ function [ws,r, Cmax2] = myTemporalMP(y,B,nonnegative,maxiter, snrTrs, mindelta,
     %   three orders of magnitude more than a generic implementation like 
     %   the one in SparseLab.
     %
-   
+    %Author:
+    %   Patrick Mineault, patrick DOT mineault AT gmail DOT com
+    %   http://xcorr.net
+    %
     %History:
     %   08/08/2011: Added deadzone option
     %   04/08/2011: Tweaked performance for large signals/bases
@@ -88,15 +82,15 @@ function [ws,r, Cmax2] = myTemporalMP(y,B,nonnegative,maxiter, snrTrs, mindelta,
     end
     if nargin < 4
         maxiter = 10000;
-    end
+    end    
     if nargin < 5
-        stopTrs = 0;
-    end
-    if nargin < 6
         mindelta = 0;
     end
-    if nargin < 7
+    if nargin < 6
         deadzone = 0;
+    end
+    if nargin < 7
+        snrTrs = 1e12;
     end
     
     maxr2 = .9999;
@@ -255,6 +249,7 @@ function [ws,r, Cmax2] = myTemporalMP(y,B,nonnegative,maxiter, snrTrs, mindelta,
             end
         end
         
+        %check SNR
         snrT = snr(y, y-r);
         if snrT >= snrTrs
             fprintf('SNR level of %.3f dB reached\n', snrT);

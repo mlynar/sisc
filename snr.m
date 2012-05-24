@@ -7,4 +7,4 @@ function snr = snr(sig, noise)
         error('sig and noise should have the same length');
     end
     
-    snr = 20 * log10(sqrt(sum(sig.^2) / L) / sqrt(sum(noise.^2) / L));
+    snr = 10 * log10(sum(sig.^2) / sum(noise.^2));
