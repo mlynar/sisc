@@ -1,4 +1,4 @@
-function [ws,r, Cmax2] = myTemporalMP(y,B,nonnegative,maxiter,mindelta,deadzone, snrTrs)
+function [ws,r, Cmax2] = myTemporalMP(y,B,nonnegative,maxiter,mindelta,deadzone, snrTrs, spkTrs)
     %[ws,r] = temporalMP(y,B,nonnegative,maxiter,maxr2,deadzone)
     %Perform matching pursuit (MP) on a one-dimensional signal y 
     %
@@ -92,6 +92,9 @@ function [ws,r, Cmax2] = myTemporalMP(y,B,nonnegative,maxiter,mindelta,deadzone,
     if nargin < 7
         snrTrs = 1e12;
     end
+    if nargin < 8
+        spkTrs = 0;
+    end
     
     maxr2 = .9999;
     
@@ -162,6 +165,11 @@ function [ws,r, Cmax2] = myTemporalMP(y,B,nonnegative,maxiter,mindelta,deadzone,
         %Pick the best basis, displacement
         %Find the max of Cmax2
         [themax,maxsqrt] = max(Cmax2); %wartosc, indeks bloku
+        %fprintf('%.5f\n',themax);
+        if abs(themax) < spkTrs
+            fprintf('Coefficient %.3f below spiking threshold after %d iter\n', themax, ii);
+            break;
+        end 
         
         if themax^2 < mindelta
             %Time to go
@@ -236,9 +244,9 @@ function [ws,r, Cmax2] = myTemporalMP(y,B,nonnegative,maxiter,mindelta,deadzone,
         
         
         %Give some feedback
-        if mod(ii,feedbackFrequency) == 0
-            fprintf('Iteration %d\n',ii);
-        end
+        %if mod(ii,feedbackFrequency) == 0
+        %    fprintf('Iteration %d\n',ii);
+        %end
         
         %Check if R^2 > maxr2
         if maxr2 < 1 && mod(ii,r2CheckFrequency) == 0

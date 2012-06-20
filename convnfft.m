@@ -1,5 +1,4 @@
-%Convolution of two vectors
-%uses the same algo as Bruno Luong's convnfft
+%Convolution of two vectors in the Fourier domain
 function R = convnfft(u,v)
     nsize = length(u) + length(v) - 1;
     vf = fft(v, nsize);

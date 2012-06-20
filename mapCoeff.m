@@ -13,7 +13,8 @@ if nargin < 5
     lr = 0.03;
     lambda = 0.05;
     noiseVar = 1;
-    verbose = false;
+    verbose = true;
+    stopCrt = 1;
 end
 
 phi = phi';
@@ -44,7 +45,7 @@ for n = 1:niter
     r = [zeros(1, L) r zeros(1, L)];
     
     newMSR = sum(r.^2);
-    if newMSR > oldMSR
+    if newMSR > oldMSR && stopCrt
         ws = wsOld;
         fprintf('MSR increased to %.4f. Stopping\n', newMSR);
         break
