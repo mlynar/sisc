@@ -12,14 +12,14 @@ end
 [fqs ind] = sort(fqs, 'ascend');
 w = w(:,ind);
 
-l = ceil(0.05 * length(w));
+l = ceil(0.1 * length(w))
 rg = (-l:l)';
-v = 10;
+v = 100;
 
 img = conv2(w,exp(-rg.^2/2/v^2),'same')';
 
 if nargin < 2
-    lim = 0.3 * max(abs(img(:)));
+    lim = 0.8 * max(abs(img(:)));
 else
     lim = lm;
 end

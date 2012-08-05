@@ -3,17 +3,17 @@ close all
 clc
 
 addpath(genpath('../code'))
+addpath(genpath('.'))
 
 %basis params
-p.totL = 221; %513;
+p.totL = 513;
 p.nKernels = 32;
 p.kML = 101;
-p.exTrs = 0.02;
+p.exTrs = 0.05; %0.02;
 
 %learning params
-p.niter = 50;
+p.niter = 20;
 p.noiseVar = 1;
-p.nbatch = ceil(linspace(1, 1, p.niter));
 
 %MAP params
 p.map.mapIter = 100;
@@ -26,20 +26,15 @@ p.map.verbose = false;
 p.mp.nonneg = false;
 p.mp.mpIter = repmat(50000, 1, p.niter);
 p.mp.nsnr = repmat(120, 1, p.niter);
-p.mp.spkTrs = repmat(0.5, 1, p.niter);
+p.mp.spkTrs = repmat(0.3, 1, p.niter);
     
 %display params
 showEvery = 100;
-saveEvery = 25;
-p.printEvery = 1;
+saveEvery = 1;
+p.printEvery = 100;
 
 %data params
-p.dataPath = '~/Desktop/sounds/training/env/';
-
-%test data params
-% p.td.ns = 15;
-% p.td.spk = 3;
-% p.td.kf = 30:32;
+p.dataPath = '~/Desktop/sounds/training/stereo_sounds.mat';
 
 %run
-cd_sisc
+stereo_cd_sisc

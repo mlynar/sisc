@@ -126,6 +126,13 @@ function [ws,r, Cmax2] = mdimTemporalMP(y,B,nonnegative,maxiter,mindelta,deadzon
     else
         C = conv2(B(:,end:-1:1),y);
     end
+    
+    %(size(B,2)+1)/2 + (0:length(y)-1)
+    %size(B)
+    %size(y)
+    
+    %B
+    
     C = C(:,(size(B,2)+1)/2 + (0:length(y)-1)); %C - macierz z konwolucja wszystkich wektorow z sygnalem il_wekt x tp
     
     %Precompute the convolution of each basis function with the other basis
@@ -201,7 +208,7 @@ function [ws,r, Cmax2] = mdimTemporalMP(y,B,nonnegative,maxiter,mindelta,deadzon
         %polozenie wartosci maksymalnej w czasie bezwzglednym
         %najprosciej: maxj = skipinds(maxj_skip);
         maxj = (maxsqrt-1)*nsqrt + maxoffset; 
-        maxj = (maxj-1)*nskip + 1;
+        maxj = (maxj-1)*nskip + 1 + ceil(nskip / 2) - 1; %ERROR -should be 1 instead of 2
         
         if nonnegative
             [~,maxi] = max(C(:,maxj)); %nr kernela dajacego maksymalna konwolucje w maxj
@@ -274,9 +281,9 @@ function [ws,r, Cmax2] = mdimTemporalMP(y,B,nonnegative,maxiter,mindelta,deadzon
         
         
         %Give some feedback
-        %if mod(ii,feedbackFrequency) == 0
-        %    fprintf('Iteration %d\n',ii);
-        %end
+        if mod(ii,feedbackFrequency) == 0
+            fprintf('Iteration %d\n',ii);
+        end
         
         %Check if R^2 > maxr2
         if maxr2 < 1 && mod(ii,r2CheckFrequency) == 0
