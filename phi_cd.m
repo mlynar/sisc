@@ -1,5 +1,6 @@
 function [fval new_phi] = phi_cd(phi, w, tData, mdP, phiLP)
 %TODO: incorporate noise variance write EPSILON
+%      reconstruct only user parts of signal, not entire one
 %fval should be maximized
 %and dPhi is a gradient of log posterior (a function to be maximized)
 

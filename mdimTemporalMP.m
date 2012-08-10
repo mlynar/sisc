@@ -119,6 +119,8 @@ function [ws,r, Cmax2] = mdimTemporalMP(y,B,nonnegative,maxiter,mindelta,deadzon
     
     %indices of allowed max values
     skipinds = 1:nskip:length(y);
+    %TEST CORRECTION
+    skipinds = skipinds + floor(nskip/2);
     
     %Compute the convolution of y with each element in B
     if size(B,1) > 100
@@ -183,7 +185,7 @@ function [ws,r, Cmax2] = mdimTemporalMP(y,B,nonnegative,maxiter,mindelta,deadzon
         %Pick the best basis, displacement
         %Find the max of Cmax2
         [themax,maxsqrt] = max(Cmax2); %wartosc, indeks bloku
-        %fprintf('%.5f\n',themax);
+        %fprintf('Spike %.5f\n',themax);
         if abs(themax) < spkTrs
             fprintf('Coefficient %.3f below spiking threshold after %d iter\n', themax, ii);
             break;
@@ -208,7 +210,8 @@ function [ws,r, Cmax2] = mdimTemporalMP(y,B,nonnegative,maxiter,mindelta,deadzon
         %polozenie wartosci maksymalnej w czasie bezwzglednym
         %najprosciej: maxj = skipinds(maxj_skip);
         maxj = (maxsqrt-1)*nsqrt + maxoffset; 
-        maxj = (maxj-1)*nskip + 1 + ceil(nskip / 2) - 1; %ERROR -should be 1 instead of 2
+        maxj = (maxj-1)*nskip + ceil(nskip / 2); %+ 1 + ceil(nskip / 2) - 1; %ERROR -should be 1 instead of 2 %CHANGE HERE BITCH!
+        %fprintf('maxj %d\n',maxj);
         
         if nonnegative
             [~,maxi] = max(C(:,maxj)); %nr kernela dajacego maksymalna konwolucje w maxj
@@ -281,9 +284,9 @@ function [ws,r, Cmax2] = mdimTemporalMP(y,B,nonnegative,maxiter,mindelta,deadzon
         
         
         %Give some feedback
-        if mod(ii,feedbackFrequency) == 0
-            fprintf('Iteration %d\n',ii);
-        end
+%         if mod(ii,feedbackFrequency) == 0
+%             fprintf('Iteration %d\n',ii);
+%         end
         
         %Check if R^2 > maxr2
         if maxr2 < 1 && mod(ii,r2CheckFrequency) == 0
@@ -295,11 +298,11 @@ function [ws,r, Cmax2] = mdimTemporalMP(y,B,nonnegative,maxiter,mindelta,deadzon
         end
         
         %check SNR
-        snrT = snr(y, y-r);
-        if snrT >= snrTrs
-            fprintf('SNR level of %.3f dB reached\n', snrT);
-            break;
-        end
+        %snrT = snr(y, y-r);
+        %if snrT >= snrTrs
+        %    fprintf('SNR level of %.3f dB reached\n', snrT);
+        %    break;
+        %end
         
         ii = ii + 1;
     end

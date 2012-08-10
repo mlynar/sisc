@@ -17,6 +17,8 @@ if nargin < 5
     stopCrt = 1;
 end
 
+stopCrt = 1;
+
 phi = phi';
 if size(sig, 2) == 1;
     sig = sig';
