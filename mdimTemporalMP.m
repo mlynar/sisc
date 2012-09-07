@@ -151,6 +151,8 @@ function [ws,r, Cmax2] = mdimTemporalMP(y,B,nonnegative,maxiter,mindelta,deadzon
     
     C(:,Cmask) = 0;
     
+    Csparse = C(:, skipinds);
+    
     %The max operation only needs to be performed once per time point
     %This is a big saving computationally when there are many basis
     %functions
@@ -181,11 +183,15 @@ function [ws,r, Cmax2] = mdimTemporalMP(y,B,nonnegative,maxiter,mindelta,deadzon
     
     ii = 1;
     sy2 = sum(y.^2);
+    
+    fakapCount = 0;
+    majorFakapCount = 0;
+    
     while ii <= maxiter        
         %Pick the best basis, displacement
         %Find the max of Cmax2
         [themax,maxsqrt] = max(Cmax2); %wartosc, indeks bloku
-        %fprintf('Spike %.5f\n',themax);
+        fprintf('Spike mdim mp %.4f at block %d ',themax, maxsqrt);
         if abs(themax) < spkTrs
             fprintf('Coefficient %.3f below spiking threshold after %d iter\n', themax, ii);
             break;
@@ -209,18 +215,48 @@ function [ws,r, Cmax2] = mdimTemporalMP(y,B,nonnegative,maxiter,mindelta,deadzon
         
         %polozenie wartosci maksymalnej w czasie bezwzglednym
         %najprosciej: maxj = skipinds(maxj_skip);
+        %maxj = skipinds(maxj_skip);
+        
+        %TODO: TU JEST FAKAP
         maxj = (maxsqrt-1)*nsqrt + maxoffset; 
-        maxj = (maxj-1)*nskip + ceil(nskip / 2); %+ 1 + ceil(nskip / 2) - 1; %ERROR -should be 1 instead of 2 %CHANGE HERE BITCH!
-        %fprintf('maxj %d\n',maxj);
+        maxj = nskip * maxj - (nskip - 1) + ceil(nskip / 2) - 2;
+        %(maxj-1)*nskip + ceil(nskip / 2); %+ 1 + ceil(nskip / 2) - 1; %ERROR -should be 1 instead of 2 %CHANGE HERE BITCH!
+        fprintf('\nposition in sparse %d position %d\n',maxj_skip, maxj);
         
         if nonnegative
-            [~,maxi] = max(C(:,maxj)); %nr kernela dajacego maksymalna konwolucje w maxj
+            %[~,maxi] = max(C(:,maxj)); %nr kernela dajacego maksymalna konwolucje w maxj
+            [~,maxi] = max(Csparse(:,maxj_skip));
         else
-            [~,maxi] = max(abs(C(:,maxj)));
+            %[~,maxi] = max(abs(C(:,maxj)));
+            [~,maxi] = max(abs(Csparse(:,maxj_skip)));
         end
-                
+        
+        %if numel(maxi) > 1 || numel(maxj) > 1
+            maxi
+            maxj
+            themax
+        %end
+        
         %update ws
-        ws(maxi,maxj) = ws(maxi,maxj) + C(maxi,maxj);
+         fprintf('Kernel number: %d\n', maxi);
+         fprintf('Ws: %.4f\n', ws(maxi, maxj));
+         ws(maxi,maxj) = ws(maxi,maxj) + C(maxi,maxj);
+         fprintf('Updating with: %.4f\n', C(maxi,maxj));
+         fprintf('Updated ws: %.4f\n\n', ws(maxi, maxj));
+%         [indx indy] = find(abs(C) == themax)
+        
+        if abs(Csparse(maxi, maxj_skip)) ~= abs(themax)
+            C(:, maxj-3:maxj+3)
+            [indx indy] = find(abs(C) == themax)
+            
+            if numel(indx) == 0
+                majorFakapCount = majorFakapCount + 1;
+            end
+            
+             fprintf('FAKAP!\n\n')
+             fakapCount = fakapCount + 1;
+       %     error('MAJOR FAKAP')
+        end
         
         %Update r incrementally
         rg = maxj + rgdelta;
@@ -243,13 +279,16 @@ function [ws,r, Cmax2] = mdimTemporalMP(y,B,nonnegative,maxiter,mindelta,deadzon
        
         C(:,rg2) = D; %apdejt macierzy konwolucji
         
+        fprintf('C after spiking: %.5f (should be 0)\n', C(maxi, maxj));
+        
         %Update Cmax
 %         rg2
 %         size(Cmax)
-%         rg2_short
+         rg2_short
 %         size(C)
-%         rg2_full
-        if nonnegative
+         rg2_full
+        C(:,rg2_full)
+         if nonnegative
             Cmax(rg2_short) = max(C(:,rg2_full)); %apdejt maksimow
         else
             Cmax(rg2_short) = max(abs(C(:,rg2_full)));
@@ -284,9 +323,9 @@ function [ws,r, Cmax2] = mdimTemporalMP(y,B,nonnegative,maxiter,mindelta,deadzon
         
         
         %Give some feedback
-%         if mod(ii,feedbackFrequency) == 0
-%             fprintf('Iteration %d\n',ii);
-%         end
+         if mod(ii,1) == 0 %if mod(ii,feedbackFrequency) == 0
+             fprintf('Iteration %d\n',ii);
+         end
         
         %Check if R^2 > maxr2
         if maxr2 < 1 && mod(ii,r2CheckFrequency) == 0
@@ -312,6 +351,8 @@ function [ws,r, Cmax2] = mdimTemporalMP(y,B,nonnegative,maxiter,mindelta,deadzon
     %TODO: rescaling errors?
     ws = bsxfun(@times,ws(:,padsize+1:end-padsize)',1./scales);
     r = r(padsize+1:end-padsize)';
+    
+    fprintf('\n\n FAKAP COUNT %d\nINCLUDING %d MAJOR FAKAPS\n\n', fakapCount, majorFakapCount);
 end
 
 %Convolution of a vector and a matrix

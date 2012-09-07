@@ -32,10 +32,10 @@ function [fval new_phi] = phi_cd(phi, w, tData, mdP, phiLP)
                 %new version
                 resK = tData - [zeros(1, totL) reconstructSignal(w', new_phi, k) zeros(1, totL)];
                 %end new version
-
+                
                 for tp = 1:length(tPs)
                     t = tPs(tp);         
-                    tInds = t + totL + rngK;    
+                    tInds = t + totL + rngK;  
 
                     phi_m(kInds) = phi_m(kInds) + resK(tInds)' / w(t,k);                
                 end

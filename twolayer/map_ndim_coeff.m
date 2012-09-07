@@ -40,19 +40,19 @@ for n = 1:niter
     %compute residue
     r = sig - rec;
     r = [zeros(nCh, L) r zeros(nCh, L)];
-        
-    newMSR = sum(sum(r.^2));
-    if newMSR > oldMSR && stopCrt
-        ws = wsOld;
-        fprintf('MSR increased to %.4f. Stopping\n', newMSR);
-        break
-    end
     
     if verbose
         fprintf('Iteration %d nnz %d\n', n, nnz(ws));
         fprintf('MSR = %.3f Kurt = %.3f Sum = %.3f\n\n', newMSR, kurtosis(ws(:)), sum(abs(ws(:))));
     end
     
+    newMSR = sum(sum(r.^2));
+    if newMSR > oldMSR && stopCrt
+        ws = wsOld;
+        fprintf('MSR increased to %.4f. Stopping\n', newMSR);
+        break
+    end
+            
     oldMSR = newMSR;
     wsOld = ws;
     
